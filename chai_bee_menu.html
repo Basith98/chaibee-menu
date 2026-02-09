@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Digital Menu</title>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: "#22c55e"
+      }
+    }
+  }
+}
+</script>
+
+<style>
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; }
+</style>
+</head>
+
+<body class="bg-slate-50">
+<div class="max-w-[414px] mx-auto min-h-screen bg-white pb-24">
+
+<!-- HEADER -->
+<header class="sticky top-0 bg-white/90 backdrop-blur z-50 px-4 py-3 border-b">
+  <div class="flex items-center">
+  <img 
+    src="https://res.cloudinary.com/dpermpcar/image/upload/v1770655391/1000246268-Picsart-AiImageEnhancer_uvnpwj.png"
+    alt="Chai Bee"
+    class="h-8 w-auto object-contain"
+  />
+</div>
+
+</header>
+
+<!-- CATEGORY BAR -->
+<div class="py-4 border-b">
+  <div id="category-bar" class="flex gap-5 overflow-x-auto no-scrollbar px-4"></div>
+</div>
+
+<!-- MENU -->
+<main class="px-4 py-2">
+  <div id="menu-list"></div>
+</main>
+
+<!-- CART BUTTON -->
+<!-- <div class="fixed bottom-5 left-0 right-0 px-6">
+  <button class="w-full bg-slate-900 text-white py-4 rounded-full flex justify-between px-6">
+    <span>View Cart</span>
+    <span>₹0</span>
+  </button>
+</div> -->
+
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+const SHEET_ID = "1DuVH9g_9x828bP6NY6K4uBzjg1-IXrbUVy1iM_KydHg";
+const URL = "https://docs.google.com/spreadsheets/d/1DuVH9g_9x828bP6NY6K4uBzjg1-IXrbUVy1iM_KydHg/gviz/tq?tqx=out:json";
+
+let items = [];
+let categories = [];
+let activeCategory = null; // 👈 important
+
+fetch(URL)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substring(47, text.length - 2));
+    const rows = json.table.rows;
+
+    items = rows
+      .filter(r => r.c && r.c.length)
+      .map(r => ({
+        name: r.c[0]?.v || "",
+        price: r.c[1]?.v || "",
+        desc: r.c[2]?.v || "",
+        img: r.c[3]?.v || "",
+        category: r.c[4]?.v?.trim() || "Other"
+      }));
+
+    categories = [...new Set(items.map(i => i.category))];
+
+    // ✅ SET ACTIVE CATEGORY AFTER DATA LOAD
+    if (categories.length) {
+      activeCategory = categories[0];
+      renderCategories();
+      renderMenu(activeCategory);
+    }
+  })
+  .catch(err => console.error("FETCH ERROR:", err));
+
+function renderCategories() {
+  const bar = document.getElementById("category-bar");
+  bar.innerHTML = "";
+
+  categories.forEach(cat => {
+    const isActive = cat === activeCategory;
+
+    bar.innerHTML += `
+      <div onclick="setActiveCategory('${cat}')"
+           class="flex flex-col items-center gap-2 shrink-0 cursor-pointer">
+
+        <div class="w-14 h-14 rounded-full
+          ${isActive ? 'bg-primary text-white' : 'bg-slate-100'}
+          flex items-center justify-center">
+
+          <span class="font-bold">${cat[0]}</span>
+        </div>
+
+        <span class="text-[11px] font-bold uppercase
+          ${isActive ? 'text-primary' : 'text-slate-500'}">
+          ${cat}
+        </span>
+      </div>
+    `;
+  });
+}
+
+function setActiveCategory(cat) {
+  activeCategory = cat;
+  renderCategories();
+  renderMenu(cat);
+}
+
+function renderMenu(category) {
+  const menu = document.getElementById("menu-list");
+  menu.innerHTML = "";
+
+  items
+    .filter(i => i.category.toLowerCase() === category.toLowerCase())
+    .forEach(item => {
+      menu.innerHTML += `
+        <div class="flex items-center gap-3 py-3 border-b">
+          <div class="w-16 h-16 rounded-lg overflow-hidden bg-slate-100">
+            <img src="${item.img}" class="w-full h-full object-cover" />
+          </div>
+          <div class="flex-1">
+            <h3 class="font-semibold text-sm">${item.name}</h3>
+            <p class="text-secondary text-sm">${item.desc}</p>
+            <p class="text-primary font-bold">₹${item.price}</p>
+          </div>
+        </div>
+      `;
+    });
+}
+
+
+
+renderCategories();
+renderMenu(activeCategory);
+
+
+
+</script>
+
+</body>
+</html>
