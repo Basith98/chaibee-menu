@@ -5,12 +5,6 @@ Customers can access the menu instantly by scanning a QR code or tapping an NFC 
 
 ---
 
-## 🚀 Live Demo
-
-👉 https://Basith98.github.io/chaibee-menu/
-
----
-
 ## ✨ Features
 
 - 📱 Mobile-first design (perfect for restaurants & cafés)
